@@ -1,0 +1,1629 @@
+// import { View, Text, TextInput, StyleSheet, Button, Alert, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+// import React, { useState } from 'react';
+// import * as DocumentPicker from 'expo-document-picker';
+// import { Picker } from '@react-native-picker/picker';
+// import axios from 'axios'; // Import Axios
+// import { ref, uploadBytes, getDownloadURL, getStorage } from 'firebase/storage'; // Import Firebase Storage functions
+// import { FIREBASE_STORAGE } from '../../firebaseConfig'; // Import Firebase Storage instance
+
+// const PermohonanInfo = () => {
+//   const [nama, setNama] = useState('');
+//   const [pekerjaan, setPekerjaan] = useState('');
+//   const [alamat, setAlamat] = useState('');
+//   const [noHp, setNoHp] = useState('');
+//   const [email, setEmail] = useState('');
+//   const [ktpUri, setKtpUri] = useState(null); // Store the file URL
+//   const [rincianPermohonan, setRincianPermohonan] = useState('');
+//   const [tujuanPermohonan, setTujuanPermohonan] = useState('');
+
+//   const [peroleh, setPeroleh] = useState({
+//     melihat: false,
+//     mendapatkanSalinan: false,
+//   });
+
+//   const [salinan, setSalinan] = useState({
+//     mengambilLangsung: false,
+//     kurir: false,
+//     pos: false,
+//     faksimili: false,
+//     emailSalinan: false,
+//   });
+
+//   const handleKtpPicker = async () => {
+//     try {
+//       const result = await DocumentPicker.getDocumentAsync({
+//         type: '*/*',
+//         copyToCacheDirectory: false,
+//       });
+
+//       if (result.type === 'success') {
+//         const fileUri = result.uri;
+//         const fileName = result.name;
+
+//         // Create a reference to the Firebase Storage
+//         const storage = getStorage(FIREBASE_STORAGE);
+//         const storageRef = ref(storage, `ktp/${fileName}`);
+
+//         // Upload file to Firebase Storage
+//         const response = await fetch(fileUri);
+//         const blob = await response.blob();
+//         await uploadBytes(storageRef, blob);
+
+//         // Get the file URL
+//         const fileUrl = await getDownloadURL(storageRef);
+//         setKtpUri(fileUrl); // Store the file URL
+//       }
+//     } catch (error) {
+//       console.log('Error picking document:', error);
+//     }
+//   };
+
+//   const handleSubmit = async () => {
+//     const perolehData = [];
+//     if (peroleh.melihat) perolehData.push('Melihat/membaca/mendengarkan/mencatat');
+//     if (peroleh.mendapatkanSalinan) perolehData.push('Mendapatkan salinan informasi hardcopy/softcopy');
+
+//     const salinanData = [];
+//     if (salinan.mengambilLangsung) salinanData.push('Mengambil Langsung');
+//     if (salinan.kurir) salinanData.push('Kurir');
+//     if (salinan.pos) salinanData.push('Pos');
+//     if (salinan.faksimili) salinanData.push('Faksimili');
+//     if (salinan.emailSalinan) salinanData.push('E-Mail');
+
+//     const data = {
+//       nama,
+//       pekerjaan,
+//       alamat,
+//       no_hp: noHp,
+//       email,
+//       ktp: ktpUri, // URL of the uploaded file
+//       rincian_permohonan: rincianPermohonan,
+//       tujuan_permohonan: tujuanPermohonan,
+//       peroleh: JSON.stringify(perolehData), // Convert to JSON string
+//       salinan: JSON.stringify(salinanData), // Convert to JSON string
+//     };
+
+//     try {
+//       const response = await axios.post('https://linyjayainformatika.co.id/ppid-bkad/api/permohonan-informasi/store', data, {
+//         headers: {
+//           'Content-Type': 'application/json',
+//         },
+//       });
+
+//       Alert.alert('Data Submitted', 'Data berhasil dikirim.');
+//       console.log('Server Response:', response.data);
+//     } catch (error) {
+//       Alert.alert('Error', 'Terjadi kesalahan saat mengirim data.');
+//       console.log('Error:', error);
+//     }
+//   };
+
+//   return (
+//     <KeyboardAvoidingView
+//       style={styles.container}
+//       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+//       keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 20} // Adjust based on your header or other elements
+//     >
+//       <ScrollView contentContainerStyle={styles.scrollViewContent}>
+//         <Text style={styles.title}>Permohonan Informasi</Text>
+//         <TextInput
+//           style={styles.input}
+//           placeholder="Nama"
+//           value={nama}
+//           onChangeText={setNama}
+//         />
+//         <Picker
+//           style={styles.input}
+//           selectedValue={pekerjaan}
+//           onValueChange={(itemValue, itemIndex) => setPekerjaan(itemValue)}
+//         >
+//           <Picker.Item label="Pilih Pekerjaan" value="" />
+//           <Picker.Item label="Pekerjaan 1" value="Pekerjaan 1" />
+//           <Picker.Item label="Pekerjaan 2" value="Pekerjaan 2" />
+//           <Picker.Item label="Pekerjaan 3" value="Pekerjaan 3" />
+//         </Picker>
+//         <TextInput
+//           style={styles.input}
+//           placeholder="Alamat"
+//           value={alamat}
+//           onChangeText={setAlamat}
+//         />
+//         <TextInput
+//           style={styles.input}
+//           placeholder="No HP"
+//           value={noHp}
+//           onChangeText={setNoHp}
+//         />
+//         <TextInput
+//           style={styles.input}
+//           placeholder="Email"
+//           value={email}
+//           onChangeText={setEmail}
+//         />
+//         <TouchableOpacity
+//           style={styles.input}
+//           onPress={handleKtpPicker}
+//         >
+//           <Text>{ktpUri ? `KTP File Path: ${ktpUri}` : 'Pilih KTP (PDF, Word, Excel, dll)'}</Text>
+//         </TouchableOpacity>
+//         <TextInput
+//           style={styles.input}
+//           placeholder="Rincian Permohonan"
+//           value={rincianPermohonan}
+//           onChangeText={setRincianPermohonan}
+//         />
+//         <TextInput
+//           style={styles.input}
+//           placeholder="Tujuan Permohonan"
+//           value={tujuanPermohonan}
+//           onChangeText={setTujuanPermohonan}
+//         />
+
+//         <Text style={styles.sectionTitle}>Cara Memperoleh Informasi</Text>
+//         <View style={styles.checkboxContainer}>
+//           <TouchableOpacity
+//             style={styles.checkbox}
+//             onPress={() => setPeroleh({ ...peroleh, melihat: !peroleh.melihat })}
+//           >
+//             <Text style={styles.checkboxLabel}>Melihat/membaca/mendengarkan/mencatat</Text>
+//             <Text style={styles.checkboxIcon}>{peroleh.melihat ? '☑' : '☐'}</Text>
+//           </TouchableOpacity>
+//           <TouchableOpacity
+//             style={styles.checkbox}
+//             onPress={() => setPeroleh({ ...peroleh, mendapatkanSalinan: !peroleh.mendapatkanSalinan })}
+//           >
+//             <Text style={styles.checkboxLabel}>Mendapatkan salinan informasi hardcopy/softcopy</Text>
+//             <Text style={styles.checkboxIcon}>{peroleh.mendapatkanSalinan ? '☑' : '☐'}</Text>
+//           </TouchableOpacity>
+//         </View>
+
+//         <Text style={styles.sectionTitle}>Cara Mendapatkan Salinan Informasi</Text>
+//         <View style={styles.checkboxContainer}>
+//           <TouchableOpacity
+//             style={styles.checkbox}
+//             onPress={() => setSalinan({ ...salinan, mengambilLangsung: !salinan.mengambilLangsung })}
+//           >
+//             <Text style={styles.checkboxLabel}>Mengambil Langsung</Text>
+//             <Text style={styles.checkboxIcon}>{salinan.mengambilLangsung ? '☑' : '☐'}</Text>
+//           </TouchableOpacity>
+//           <TouchableOpacity
+//             style={styles.checkbox}
+//             onPress={() => setSalinan({ ...salinan, kurir: !salinan.kurir })}
+//           >
+//             <Text style={styles.checkboxLabel}>Kurir</Text>
+//             <Text style={styles.checkboxIcon}>{salinan.kurir ? '☑' : '☐'}</Text>
+//           </TouchableOpacity>
+//           <TouchableOpacity
+//             style={styles.checkbox}
+//             onPress={() => setSalinan({ ...salinan, pos: !salinan.pos })}
+//           >
+//             <Text style={styles.checkboxLabel}>Pos</Text>
+//             <Text style={styles.checkboxIcon}>{salinan.pos ? '☑' : '☐'}</Text>
+//           </TouchableOpacity>
+//           <TouchableOpacity
+//             style={styles.checkbox}
+//             onPress={() => setSalinan({ ...salinan, faksimili: !salinan.faksimili })}
+//           >
+//             <Text style={styles.checkboxLabel}>Faksimili</Text>
+//             <Text style={styles.checkboxIcon}>{salinan.faksimili ? '☑' : '☐'}</Text>
+//           </TouchableOpacity>
+//           <TouchableOpacity
+//             style={styles.checkbox}
+//             onPress={() => setSalinan({ ...salinan, emailSalinan: !salinan.emailSalinan })}
+//           >
+//             <Text style={styles.checkboxLabel}>E-Mail</Text>
+//             <Text style={styles.checkboxIcon}>{salinan.emailSalinan ? '☑' : '☐'}</Text>
+//           </TouchableOpacity>
+//         </View>
+
+//         <View style={styles.submitButtonContainer}>
+//           <Button title="Submit" onPress={handleSubmit} />
+//         </View>
+//       </ScrollView>
+//     </KeyboardAvoidingView>
+//   );
+// };
+
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//   },
+//   scrollViewContent: {
+//     flexGrow: 1,
+//     justifyContent: 'space-between', // Ensure the content takes up available space
+//     paddingHorizontal: 20,
+//   },
+//   title: {
+//     fontSize: 24,
+//     marginBottom: 16,
+//   },
+//   input: {
+//     height: 40,
+//     borderColor: 'gray',
+//     borderWidth: 1,
+//     marginBottom: 12,
+//     paddingHorizontal: 10,
+//     paddingVertical: 8,
+//   },
+//   sectionTitle: {
+//     fontSize: 18,
+//     marginTop: 20,
+//     marginBottom: 10,
+//   },
+//   checkboxContainer: {
+//     marginBottom: 20,
+//   },
+//   checkbox: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     marginBottom: 10,
+//   },
+//   checkboxLabel: {
+//     flex: 1,
+//   },
+//   checkboxIcon: {
+//     fontSize: 18,
+//     marginRight: 10,
+//   },
+//   submitButtonContainer: {
+//     marginTop: 20, // Add margin to push the button up
+//     padding: 10, // Add padding for better spacing
+//   },
+// });
+
+// export default PermohonanInfo;
+
+
+
+// import React, { useState, useEffect } from 'react';
+// import {
+//   View,
+//   Button,
+//   Text,
+//   TouchableOpacity,
+//   StyleSheet,
+//   TextInput,
+//   KeyboardAvoidingView,
+//   ScrollView,
+//   Alert,
+// } from 'react-native';
+// import { Picker } from '@react-native-picker/picker';
+// import * as DocumentPicker from 'expo-document-picker';
+
+// import { FIREBASE_AUTH } from '../../firebaseConfig';
+// import BackgroundComponent from '../../components/background';
+// import { router } from 'expo-router';
+// import styles from '../../assets/style/permohonanInfostyle';
+
+// interface PermohonanData {
+//   namaLengkap: string;
+//   pekerjaan: string;
+//   alamat: string;
+//   nomorHP: string;
+//   nik: string;
+//   email: string;
+//   rincianPermohonan: string;
+//   tujuanPermohonan: string;
+//   documentUrl: string;
+//   memperolehInformasi?: string;
+//   salinanInformasi?: string;
+//   status: string; 
+// }
+
+// const PermohonanInfo: React.FC = () => {
+//   // const navigation = useNavigation(); // Use useNavigation hook to access navigation object
+
+//   const [selectedDocument, setSelectedDocument] = useState<string | undefined>(undefined);
+//   const [namaLengkap, setNamaLengkap] = useState<string>('');
+//   const [pekerjaan, setPekerjaan] = useState<string>('');
+//   const [alamat, setAlamat] = useState<string>('');
+//   const [nomorHP, setNomorHP] = useState<string>('');
+//   const [nik, setNIK] = useState<string>('');
+//   const [email, setEmail] = useState<string>(''); // Remove initial value
+//   const [rincianPermohonan, setRincianPermohonan] = useState<string>('');
+//   const [tujuanPermohonan, setTujuanPermohonan] = useState<string>('');
+
+//   const [memperolehInformasi1, setMemperolehInformasi1] = useState<boolean>(false);
+//   const [memperolehInformasi2, setMemperolehInformasi2] = useState<boolean>(false);
+
+//   const [salinanInformasi1, setsalinanInformasi1] = useState<boolean>(false);
+//   const [salinanInformasi2, setsalinanInformasi2] = useState<boolean>(false);
+//   const [salinanInformasi3, setsalinanInformasi3] = useState<boolean>(false);
+//   const [salinanInformasi4, setsalinanInformasi4] = useState<boolean>(false);
+//   const [salinanInformasi5, setsalinanInformasi5] = useState<boolean>(false);
+//   const [submitting, setSubmitting] = useState<boolean>(false);
+
+//   const [activities, setActivities] = useState<any[]>([]);
+//   const pickDocument = async () => {
+//     try {
+//       let result = await DocumentPicker.getDocumentAsync({
+//         type: '*/*',
+//       });
+  
+//       if (result.canceled) {
+//         console.log('Document picking was canceled.');
+//         return;
+//       }
+  
+//       if (result.assets && result.assets.length > 0) {
+//         setSelectedDocument(result.assets[0].uri);
+//         console.log('Document picked:', result.assets[0]);
+//       }
+//     } catch (error) {
+//       console.log('Error picking document:', error);
+//       Alert.alert('Error', 'Failed to pick a document.');
+//     }
+//   };
+  
+//   const deleteDocument = () => {
+//     setSelectedDocument(undefined);
+//   };
+
+
+//   const handleMemperolehInformasi = (option: '1' | '2') => {
+//     if (option === '1') {
+//       setMemperolehInformasi1(true);
+//       setMemperolehInformasi2(false);
+//     } else if (option === '2') {
+//       setMemperolehInformasi1(false);
+//       setMemperolehInformasi2(true);
+//     }
+//   };
+  
+//   const handleSalinanInformasi = (option: '1' | '2' | '3' | '4' | '5') => {
+//     setsalinanInformasi1(option === '1');
+//     setsalinanInformasi2(option === '2');
+//     setsalinanInformasi3(option === '3');
+//     setsalinanInformasi4(option === '4');
+//     setsalinanInformasi5(option === '5');
+//   };
+
+  
+  
+//   const handleSave = async () => {
+//     if (
+//       !namaLengkap ||
+//       !pekerjaan ||
+//       !alamat ||
+//       !nomorHP ||
+//       !nik ||
+//       !rincianPermohonan ||
+//       !tujuanPermohonan ||
+//       !selectedDocument
+//     ) {
+//       Alert.alert('Error', 'Please fill all the fields and select a document');
+//       return;
+//     }
+  
+//     if (!memperolehInformasi1 && !memperolehInformasi2) {
+//       Alert.alert('Error', 'Please select at least one option for "Cara Memperoleh Informasi"');
+//       return;
+//     }
+  
+//     if (
+//       !salinanInformasi1 &&
+//       !salinanInformasi2 &&
+//       !salinanInformasi3 &&
+//       !salinanInformasi4 &&
+//       !salinanInformasi5
+//     ) {
+//       Alert.alert('Error', 'Please select at least one option for "Cara Mendapatkan Salinan Informasi"');
+//       return;
+//     }
+  
+//     try {
+//       const documentResponse = await fetch(selectedDocument);
+//       const documentBlob = await documentResponse.blob();
+  
+//       // Create form data
+//       const formData = new FormData();
+//       formData.append('nama', namaLengkap);
+//       formData.append('pekerjaan', pekerjaan === '' ? 'Pilih Pekerjaan' : pekerjaan);
+//       formData.append('alamat', alamat);
+//       formData.append('no_hp', nomorHP);
+//       formData.append('email', FIREBASE_AUTH.currentUser?.email || '');
+//       formData.append('ktp', documentBlob, selectedDocument.split('/').pop());
+//       formData.append('rincian_permohonan', rincianPermohonan);
+//       formData.append('tujuan_permohonan', tujuanPermohonan);
+  
+//       const peroleh = [];
+//       if (memperolehInformasi1) peroleh.push('Melihat/membaca/mendengarkan/mencatat');
+//       if (memperolehInformasi2) peroleh.push('Mendapatkan salinan informasi hardcopy/softcopy');
+//       formData.append('peroleh', JSON.stringify(peroleh));
+  
+//       const salinan = [];
+//       if (salinanInformasi1) salinan.push('Mengambil Langsung');
+//       if (salinanInformasi2) salinan.push('Kurir');
+//       if (salinanInformasi3) salinan.push('Pos');
+//       if (salinanInformasi4) salinan.push('Faksimili');
+//       if (salinanInformasi5) salinan.push('E-Mail');
+//       formData.append('salinan', JSON.stringify(salinan));
+  
+//       // Send data to API
+//       const response = await fetch('https://linyjayainformatika.co.id/ppid-bkad/api/permohonan-informasi/store', {
+//         method: 'POST',
+//         body: formData,
+//       });
+  
+//       if (!response.ok) {
+//         throw new Error('Failed to save activity');
+//       }
+  
+//       Alert.alert('Success', 'Activity saved successfully');
+//       // Reset form fields
+//       setNamaLengkap('');
+//       setPekerjaan('');
+//       setAlamat('');
+//       setNomorHP('');
+//       setNIK('');
+//       setEmail('');
+//       setRincianPermohonan('');
+//       setTujuanPermohonan('');
+//       setMemperolehInformasi1(false);
+//       setMemperolehInformasi2(false);
+//       setsalinanInformasi1(false);
+//       setsalinanInformasi2(false);
+//       setsalinanInformasi3(false);
+//       setsalinanInformasi4(false);
+//       setsalinanInformasi5(false);
+//       setSelectedDocument(undefined);
+//     } catch (error) {
+//       console.log('Error saving activity:', error);
+//       Alert.alert('Error', 'Failed to save activity');
+//     }
+//   };
+  
+
+
+//   return (
+//     <KeyboardAvoidingView style={styles.container} behavior="padding" enabled>
+// <BackgroundComponent>
+//       <ScrollView contentContainerStyle={styles.scrollContainer}>
+//         <Text style={styles.largeTitle}>Permohonan Informasi Publik</Text>
+//         <View>
+//     </View>
+//       <View style={styles.button}>
+//         <Button 
+//         onPress={() => router.navigate('allFile/daftarPermohonan')}
+//         title='LIHAT DAFTAR PERMOHONAN' color={'#8D9BC1'}>
+
+//         </Button>
+//       </View>
+//       <View style={styles.separator}></View>
+//   <View style={styles.layout}> 
+//         <TextInput
+//           placeholder="Nama Lengkap"
+//           value={namaLengkap}
+//           onChangeText={setNamaLengkap}
+//           style={styles.input}
+//           placeholderTextColor={"#ffffff"}
+//         />
+//         <View style={styles.inputContainer}>
+//           <View style={styles.pickerContainer}>
+//             <Picker
+//               selectedValue={pekerjaan}
+//               onValueChange={(itemValue: React.SetStateAction<string>) => setPekerjaan(itemValue)}
+//               style={styles.picker}
+//               dropdownIconColor="#FFFFFF"
+//             >
+//               <Picker.Item label="Pilih Pekerjaan" value="" />
+//               <Picker.Item label="Pegawai/Dosen" value="Pegawai/Dosen" />
+//               <Picker.Item label="LSM/Ormas/Parpol" value="LSM/Ormas/Parpol" />
+//               <Picker.Item label="Kementrian/Instansi Pemerintah" value="Kementrian/Instansi Pemerintah" />
+//               <Picker.Item label="Pelajar/Mahasiswa" value="Pelajar/Mahasiswa" />
+//             </Picker>
+//           </View>
+//         </View>
+
+//         <TextInput
+//           placeholder="Alamat"
+//           value={alamat}
+//           onChangeText={setAlamat}
+//           style={[styles.input, styles.largeInput]}
+//           multiline
+//           placeholderTextColor={"#ffffff"}
+//         />
+//         <TextInput
+//           placeholder="Nomor HP"
+//           value={nomorHP}
+//           onChangeText={setNomorHP}
+//           style={styles.input}
+//           placeholderTextColor={"#ffffff"}
+//         />
+//         <TextInput
+//           placeholder="NIK"
+//           value={nik}
+//           onChangeText={setNIK}
+//           style={styles.input}
+//           placeholderTextColor={"#ffffff"}
+//         />
+
+//         <View style={styles.inputContainer}>
+//           <Text style={styles.inputLabel}>Upload KTP</Text>
+//           <View style={styles.documentSelection}>
+//             {!selectedDocument ? (
+//               <TouchableOpacity onPress={pickDocument} style={styles.browseButton}>
+//                 <Text style={styles.browseButtonText}>Choose File</Text>
+//               </TouchableOpacity>
+//             ) : (
+//               <View style={styles.selectedDocument}>
+//                 <Text style={styles.selectedDocumentText}>File Selected: {selectedDocument.split('/').pop()}</Text>
+//                 <TouchableOpacity onPress={deleteDocument} style={styles.deleteButton}>
+//                   <Text style={styles.deleteButtonText}>Delete</Text>
+//                 </TouchableOpacity>
+//               </View>
+//             )}
+//           </View>
+//         </View>
+
+//         <TextInput
+//             placeholder={`${FIREBASE_AUTH.currentUser?.email || 'Your Email'}`}
+//             editable={false}
+//             style={styles.input}
+//             value={FIREBASE_AUTH.currentUser?.email || ''}
+//             keyboardType="email-address"
+//             placeholderTextColor="#ffffff"
+// />
+
+//         <TextInput
+//           placeholder="Rincian Permohonan"
+//           value={rincianPermohonan}
+//           onChangeText={setRincianPermohonan}
+//           style={[styles.input, styles.largeInput]}
+//           placeholderTextColor={"#ffffff"}
+//           multiline
+//         />
+//         <TextInput
+//           placeholder="Tujuan Permohonan"
+//           value={tujuanPermohonan}
+//           onChangeText={setTujuanPermohonan}
+//           style={[styles.input, styles.largeInput]}
+//           placeholderTextColor={"#ffffff"}
+//           multiline
+//         />
+//         <View style={styles.separator}></View>
+//           <Text style={styles.sectionTitle}>Cara Memperoleh Informasi</Text>
+//           <View style={styles.checkboxRow}>
+//                             <TouchableOpacity
+//                   style={styles.checkbox}
+//                   onPress={() => handleMemperolehInformasi('1')}
+//                 >
+//                   <Text style={styles.checkboxText}>1. Melihat/membaca/mendengarkan/mencatat</Text>
+//                   {memperolehInformasi1 ? (
+//                     <Text style={styles.checkboxIcon}>☑</Text>
+//                   ) : (
+//                     <Text style={styles.checkboxIcon}>☐</Text>
+//                   )}
+//                 </TouchableOpacity>     
+
+//           </View>
+//           <View style={styles.checkboxRow}>
+//           <TouchableOpacity
+//                   style={styles.checkbox}
+//                   onPress={() => handleMemperolehInformasi('2')}
+//                 >
+//                   <Text style={styles.checkboxText}>2. Mendapatkan salinan informasi hardcopy/softcopy</Text>
+//                   {memperolehInformasi2 ? (
+//                     <Text style={styles.checkboxIcon}>☑</Text>
+//                   ) : (
+//                     <Text style={styles.checkboxIcon}>☐</Text>
+//                   )}
+//                 </TouchableOpacity>
+
+//           </View>
+
+//         <View style={styles.separator}></View>
+
+  
+//           <Text style={styles.sectionTitle}>Cara Mendapatkan Salinan Informasi</Text>
+//           <View style={styles.checkboxRow}>
+//           <TouchableOpacity
+//             style={styles.checkbox}
+//             onPress={() => handleSalinanInformasi('1')}
+//           >
+//             <Text style={styles.checkboxText}>1. Mengambil Langsung</Text>
+//             {salinanInformasi1 ? (
+//               <Text style={styles.checkboxIcon}>☑</Text>
+//             ) : (
+//               <Text style={styles.checkboxIcon}>☐</Text>
+//             )}
+//           </TouchableOpacity>
+
+//           </View>
+//           <View style={styles.checkboxRow}>
+//           <TouchableOpacity
+//                 style={styles.checkbox}
+//                 onPress={() => handleSalinanInformasi('2')}
+//               >
+//                 <Text style={styles.checkboxText}>2. Kurir</Text>
+//                 {salinanInformasi2 ? (
+//                   <Text style={styles.checkboxIcon}>☑</Text>
+//                 ) : (
+//                   <Text style={styles.checkboxIcon}>☐</Text>
+//                 )}
+//               </TouchableOpacity>
+
+//           </View>
+//           <View style={styles.checkboxRow}>
+//           <TouchableOpacity
+//                   style={styles.checkbox}
+//                   onPress={() => handleSalinanInformasi('3')}
+//                 >
+//                   <Text style={styles.checkboxText}>3. Pos</Text>
+//                   {salinanInformasi3 ? (
+//                     <Text style={styles.checkboxIcon}>☑</Text>
+//                   ) : (
+//                     <Text style={styles.checkboxIcon}>☐</Text>
+//                   )}
+//                 </TouchableOpacity>
+
+//           </View>
+//           <View style={styles.checkboxRow}>
+//           <TouchableOpacity
+//                 style={styles.checkbox}
+//                 onPress={() => handleSalinanInformasi('4')}
+//               >
+//                 <Text style={styles.checkboxText}>4. Faksimili</Text>
+//                 {salinanInformasi4 ? (
+//                   <Text style={styles.checkboxIcon}>☑</Text>
+//                 ) : (
+//                   <Text style={styles.checkboxIcon}>☐</Text>
+//                 )}
+//               </TouchableOpacity>
+
+//           </View>
+//           <View style={styles.checkboxRow}>
+//           <TouchableOpacity
+//               style={styles.checkbox}
+//               onPress={() => handleSalinanInformasi('5')}
+//             >
+//               <Text style={styles.checkboxText}>5. E-Mail</Text>
+//               {salinanInformasi5 ? (
+//                 <Text style={styles.checkboxIcon}>☑</Text>
+//               ) : (
+//                 <Text style={styles.checkboxIcon}>☐</Text>
+//               )}
+//             </TouchableOpacity>
+
+//           </View>
+
+//           <View style={styles.button}>
+//             <Button title="SUBMIT FORM" onPress={handleSave} color={'#8D9BC1'}/>
+//           </View>
+//   </View>
+  
+//       </ScrollView>
+//       </BackgroundComponent>
+//     </KeyboardAvoidingView>
+//   );
+// };
+
+// export default PermohonanInfo;
+
+
+
+
+// import React, { useState, useEffect } from 'react';
+// import {
+//   View,
+//   Button,
+//   Text,
+//   TouchableOpacity,
+//   StyleSheet,
+//   TextInput,
+//   KeyboardAvoidingView,
+//   ScrollView,
+//   Alert,
+// } from 'react-native';
+// import { Picker } from '@react-native-picker/picker';
+// import * as DocumentPicker from 'expo-document-picker';
+// import { collection, addDoc, getDocs } from 'firebase/firestore';
+// import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+// import { FIRESTORE_DB, FIREBASE_STORAGE, FIREBASE_AUTH } from '../../firebaseConfig';
+// import BackgroundComponent from '../../components/background';
+// import { router } from 'expo-router';
+// import styles from '../../assets/style/permohonanInfostyle';
+
+// interface PermohonanData {
+//   namaLengkap: string;
+//   pekerjaan: string;
+//   alamat: string;
+//   nomorHP: string;
+//   nik: string;
+//   email: string;
+//   rincianPermohonan: string;
+//   tujuanPermohonan: string;
+//   documentUrl: string;
+//   memperolehInformasi?: string;
+//   salinanInformasi?: string;
+//   status: string; 
+// }
+
+// const PermohonanInfo: React.FC = () => {
+//   // const navigation = useNavigation(); // Use useNavigation hook to access navigation object
+
+//   const [selectedDocument, setSelectedDocument] = useState<string | undefined>(undefined);
+//   const [namaLengkap, setNamaLengkap] = useState<string>('');
+//   const [pekerjaan, setPekerjaan] = useState<string>('');
+//   const [alamat, setAlamat] = useState<string>('');
+//   const [nomorHP, setNomorHP] = useState<string>('');
+//   const [nik, setNIK] = useState<string>('');
+//   const [email, setEmail] = useState<string>(''); // Remove initial value
+//   const [rincianPermohonan, setRincianPermohonan] = useState<string>('');
+//   const [tujuanPermohonan, setTujuanPermohonan] = useState<string>('');
+
+//   const [memperolehInformasi1, setMemperolehInformasi1] = useState<boolean>(false);
+//   const [memperolehInformasi2, setMemperolehInformasi2] = useState<boolean>(false);
+
+//   const [salinanInformasi1, setsalinanInformasi1] = useState<boolean>(false);
+//   const [salinanInformasi2, setsalinanInformasi2] = useState<boolean>(false);
+//   const [salinanInformasi3, setsalinanInformasi3] = useState<boolean>(false);
+//   const [salinanInformasi4, setsalinanInformasi4] = useState<boolean>(false);
+//   const [salinanInformasi5, setsalinanInformasi5] = useState<boolean>(false);
+//   const [submitting, setSubmitting] = useState<boolean>(false);
+
+//   const [activities, setActivities] = useState<any[]>([]);
+
+//   const fetchActivities = async () => {
+//     try {
+//       const querySnapshot = await getDocs(collection(FIRESTORE_DB, 'permohonanInfo'));
+//       const fetchedActivities = querySnapshot.docs.map((doc) => {
+//         const data = doc.data();
+//         return {
+//           id: doc.id,
+//           ...data,
+//         };
+//       });
+//       setActivities(fetchedActivities);
+//     } catch (error) {
+//       console.error('Error fetching activities:', error);
+//       Alert.alert('Error', 'Failed to fetch activities');
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchActivities();
+//   }, []);
+
+//   const pickDocument = async () => {
+//     try {
+//       let result = await DocumentPicker.getDocumentAsync({
+//         type: '*/*',
+//       });
+
+//       if (result.canceled) {
+//         console.log('Document picking was canceled.');
+//         return;
+//       }
+
+//       if (result.assets && result.assets.length > 0) {
+//         setSelectedDocument(result.assets[0].uri);
+//         console.log('Document picked:', result.assets[0]);
+//       }
+//     } catch (error) {
+//       console.log('Error picking document:', error);
+//       Alert.alert('Error', 'Failed to pick a document.');
+//     }
+//   };
+
+//   const deleteDocument = () => {
+//     setSelectedDocument(undefined);
+//   };
+
+
+//   const handleMemperolehInformasi = (option: '1' | '2') => {
+//     if (option === '1') {
+//       setMemperolehInformasi1(true);
+//       setMemperolehInformasi2(false);
+//     } else if (option === '2') {
+//       setMemperolehInformasi1(false);
+//       setMemperolehInformasi2(true);
+//     }
+//   };
+  
+//   const handleSalinanInformasi = (option: '1' | '2' | '3' | '4' | '5') => {
+//     setsalinanInformasi1(option === '1');
+//     setsalinanInformasi2(option === '2');
+//     setsalinanInformasi3(option === '3');
+//     setsalinanInformasi4(option === '4');
+//     setsalinanInformasi5(option === '5');
+//   };
+
+  
+  
+//   const handleSave = async () => {
+//     // Validasi untuk memeriksa apakah semua input terisi
+//     if (
+//       !namaLengkap ||
+//       !pekerjaan ||
+//       !alamat ||
+//       !nomorHP ||
+//       !nik ||
+//       !rincianPermohonan ||
+//       !tujuanPermohonan ||
+//       !selectedDocument
+//     ) {
+//       Alert.alert('Error', 'Please fill all the fields and select a document');
+//       return;
+//     }
+  
+//     // Validasi untuk memeriksa apakah minimal satu opsi checkbox dipilih
+//     if (!memperolehInformasi1 && !memperolehInformasi2) {
+//       Alert.alert(
+//         'Error',
+//         'Please select at least one option for "Cara Memperoleh Informasi"'
+//       );
+//       return;
+//     }
+  
+//     // Validasi untuk memeriksa apakah minimal satu opsi checkbox dipilih
+//     if (
+//       !salinanInformasi1 &&
+//       !salinanInformasi2 &&
+//       !salinanInformasi3 &&
+//       !salinanInformasi4 &&
+//       !salinanInformasi5
+//     ) {
+//       Alert.alert(
+//         'Error',
+//         'Please select at least one option for "Cara Mendapatkan Salinan Informasi"'
+//       );
+//       return;
+//     }
+  
+//     try {
+//       // Ambil blob dari dokumen yang dipilih
+//       const documentResponse = await fetch(selectedDocument);
+//       const documentBlob = await documentResponse.blob();
+  
+//       // Simpan dokumen ke Firebase Storage
+//       const documentStorageRef = ref(
+//         FIREBASE_STORAGE,
+//         `documents/${Date.now()}_${namaLengkap}`
+//       );
+//       await uploadBytes(documentStorageRef, documentBlob);
+//       const documentDownloadURL = await getDownloadURL(documentStorageRef);
+  
+//       // Data permohonan yang akan disimpan
+//       const dataToAdd: PermohonanData = {
+//         namaLengkap,
+//         pekerjaan: pekerjaan === '' ? 'Pilih Pekerjaan' : pekerjaan,
+//         alamat,
+//         nomorHP,
+//         nik,
+//         email: FIREBASE_AUTH.currentUser?.email || '', // Pastikan email terisi
+//         rincianPermohonan,
+//         tujuanPermohonan,
+//         documentUrl: documentDownloadURL,
+//         status: 'On Process',
+//       };
+  
+//       // Tambahkan opsi memperoleh informasi ke data jika dipilih
+//       if (memperolehInformasi1) {
+//         dataToAdd.memperolehInformasi =
+//           '1. Melihat/membaca/mendengarkan/mencatat';
+//       }
+//       if (memperolehInformasi2) {
+//         dataToAdd.memperolehInformasi =
+//           '2. Mendapatkan salinan informasi hardcopy/softcopy';
+//       }
+  
+//       // Tambahkan opsi mendapatkan salinan informasi ke data jika dipilih
+//       if (salinanInformasi1) {
+//         dataToAdd.salinanInformasi = '1. Mengambil Langsung';
+//       }
+//       if (salinanInformasi2) {
+//         dataToAdd.salinanInformasi = '2. Kurir';
+//       }
+//       if (salinanInformasi3) {
+//         dataToAdd.salinanInformasi = '3. Pos';
+//       }
+//       if (salinanInformasi4) {
+//         dataToAdd.salinanInformasi = '4. Faksimili';
+//       }
+//       if (salinanInformasi5) {
+//         dataToAdd.salinanInformasi = '5. E-Mail';
+//       }
+  
+//       // Tambahkan data ke koleksi 'permohonanInfo' di Firestore
+//       await addDoc(collection(FIRESTORE_DB, 'permohonanInfo'), dataToAdd);
+  
+//       // Tampilkan pesan sukses kepada pengguna
+//       Alert.alert('Success', 'Activity saved successfully');
+  
+//       // Setel ulang nilai input dan state untuk persiapan input baru
+//       setNamaLengkap('');
+//       setPekerjaan('');
+//       setAlamat('');
+//       setNomorHP('');
+//       setNIK('');
+//       setEmail('');
+//       setRincianPermohonan('');
+//       setTujuanPermohonan('');
+//       setMemperolehInformasi1(false);
+//       setMemperolehInformasi2(false);
+//       setsalinanInformasi1(false);
+//       setsalinanInformasi2(false);
+//       setsalinanInformasi3(false);
+//       setsalinanInformasi4(false);
+//       setsalinanInformasi5(false);
+//       setSelectedDocument(undefined);
+  
+//       // Ambil ulang daftar aktivitas terbaru dari Firestore
+//       fetchActivities();
+      
+//       // Setelah sukses, tambahkan jeda sebelum pengguna dapat mengirim lagi
+//       setTimeout(() => {
+//         setSubmitting(false);
+//       }, 10000); // 10 detik
+  
+//     } catch (error) {
+//       console.log('Error saving activity:', error);
+//       Alert.alert('Error', 'Failed to save activity');
+//       setSubmitting(false); // Pastikan untuk mengatur kembali ke false saat ada kesalahan
+//     }
+//   };
+  
+//   // Navigasi ke halaman DaftarPermohonan
+// // Navigasi ke halaman DaftarPermohonan
+
+//   return (
+//     <KeyboardAvoidingView style={styles.container} behavior="padding" enabled>
+// <BackgroundComponent>
+//       <ScrollView contentContainerStyle={styles.scrollContainer}>
+//         <Text style={styles.largeTitle}>Permohonan Informasi Publik</Text>
+//         <View>
+//     </View>
+//       <View style={styles.button}>
+//         <Button 
+//         onPress={() => router.navigate('allFile/daftarPermohonan')}
+//         title='LIHAT DAFTAR PERMOHONAN' color={'#8D9BC1'}>
+
+//         </Button>
+//       </View>
+//       <View style={styles.separator}></View>
+//   <View style={styles.layout}> 
+//         <TextInput
+//           placeholder="Nama Lengkap"
+//           value={namaLengkap}
+//           onChangeText={setNamaLengkap}
+//           style={styles.input}
+//           placeholderTextColor={"#ffffff"}
+//         />
+//         <View style={styles.inputContainer}>
+//           <View style={styles.pickerContainer}>
+//             <Picker
+//               selectedValue={pekerjaan}
+//               onValueChange={(itemValue: React.SetStateAction<string>) => setPekerjaan(itemValue)}
+//               style={styles.picker}
+//               dropdownIconColor="#FFFFFF"
+//             >
+//               <Picker.Item label="Pilih Pekerjaan" value="" />
+//               <Picker.Item label="Pegawai/Dosen" value="Pegawai/Dosen" />
+//               <Picker.Item label="LSM/Ormas/Parpol" value="LSM/Ormas/Parpol" />
+//               <Picker.Item label="Kementrian/Instansi Pemerintah" value="Kementrian/Instansi Pemerintah" />
+//               <Picker.Item label="Pelajar/Mahasiswa" value="Pelajar/Mahasiswa" />
+//             </Picker>
+//           </View>
+//         </View>
+
+//         <TextInput
+//           placeholder="Alamat"
+//           value={alamat}
+//           onChangeText={setAlamat}
+//           style={[styles.input, styles.largeInput]}
+//           multiline
+//           placeholderTextColor={"#ffffff"}
+//         />
+//         <TextInput
+//           placeholder="Nomor HP"
+//           value={nomorHP}
+//           onChangeText={setNomorHP}
+//           style={styles.input}
+//           placeholderTextColor={"#ffffff"}
+//         />
+//         <TextInput
+//           placeholder="NIK"
+//           value={nik}
+//           onChangeText={setNIK}
+//           style={styles.input}
+//           placeholderTextColor={"#ffffff"}
+//         />
+
+//         <View style={styles.inputContainer}>
+//           <Text style={styles.inputLabel}>Upload KTP</Text>
+//           <View style={styles.documentSelection}>
+//             {!selectedDocument ? (
+//               <TouchableOpacity onPress={pickDocument} style={styles.browseButton}>
+//                 <Text style={styles.browseButtonText}>Choose File</Text>
+//               </TouchableOpacity>
+//             ) : (
+//               <View style={styles.selectedDocument}>
+//                 <Text style={styles.selectedDocumentText}>File Selected: {selectedDocument.split('/').pop()}</Text>
+//                 <TouchableOpacity onPress={deleteDocument} style={styles.deleteButton}>
+//                   <Text style={styles.deleteButtonText}>Delete</Text>
+//                 </TouchableOpacity>
+//               </View>
+//             )}
+//           </View>
+//         </View>
+
+//         <TextInput
+//             placeholder={`${FIREBASE_AUTH.currentUser?.email || 'Your Email'}`}
+//             editable={false}
+//             style={styles.input}
+//             value={FIREBASE_AUTH.currentUser?.email || ''}
+//             keyboardType="email-address"
+//             placeholderTextColor="#ffffff"
+// />
+
+//         <TextInput
+//           placeholder="Rincian Permohonan"
+//           value={rincianPermohonan}
+//           onChangeText={setRincianPermohonan}
+//           style={[styles.input, styles.largeInput]}
+//           placeholderTextColor={"#ffffff"}
+//           multiline
+//         />
+//         <TextInput
+//           placeholder="Tujuan Permohonan"
+//           value={tujuanPermohonan}
+//           onChangeText={setTujuanPermohonan}
+//           style={[styles.input, styles.largeInput]}
+//           placeholderTextColor={"#ffffff"}
+//           multiline
+//         />
+
+//         {/* Checkbox for memperolehInformasi */}
+//         {/* <View style={styles.sectionContainer}> */}
+//         <View style={styles.separator}></View>
+//           <Text style={styles.sectionTitle}>Cara Memperoleh Informasi</Text>
+//           <View style={styles.checkboxRow}>
+//                             <TouchableOpacity
+//                   style={styles.checkbox}
+//                   onPress={() => handleMemperolehInformasi('1')}
+//                 >
+//                   <Text style={styles.checkboxText}>1. Melihat/membaca/mendengarkan/mencatat</Text>
+//                   {memperolehInformasi1 ? (
+//                     <Text style={styles.checkboxIcon}>☑</Text>
+//                   ) : (
+//                     <Text style={styles.checkboxIcon}>☐</Text>
+//                   )}
+//                 </TouchableOpacity>     
+
+//           </View>
+//           <View style={styles.checkboxRow}>
+//           <TouchableOpacity
+//                   style={styles.checkbox}
+//                   onPress={() => handleMemperolehInformasi('2')}
+//                 >
+//                   <Text style={styles.checkboxText}>2. Mendapatkan salinan informasi hardcopy/softcopy</Text>
+//                   {memperolehInformasi2 ? (
+//                     <Text style={styles.checkboxIcon}>☑</Text>
+//                   ) : (
+//                     <Text style={styles.checkboxIcon}>☐</Text>
+//                   )}
+//                 </TouchableOpacity>
+
+//           </View>
+//         {/* </View> */}
+//         <View style={styles.separator}></View>
+
+//         {/* Checkbox for Cara Mendapatkan Salinan Informasi */}
+//         {/* <View style={styles.sectionContainer}> */}
+//           <Text style={styles.sectionTitle}>Cara Mendapatkan Salinan Informasi</Text>
+//           <View style={styles.checkboxRow}>
+//           <TouchableOpacity
+//             style={styles.checkbox}
+//             onPress={() => handleSalinanInformasi('1')}
+//           >
+//             <Text style={styles.checkboxText}>1. Mengambil Langsung</Text>
+//             {salinanInformasi1 ? (
+//               <Text style={styles.checkboxIcon}>☑</Text>
+//             ) : (
+//               <Text style={styles.checkboxIcon}>☐</Text>
+//             )}
+//           </TouchableOpacity>
+
+//           </View>
+//           <View style={styles.checkboxRow}>
+//           <TouchableOpacity
+//                 style={styles.checkbox}
+//                 onPress={() => handleSalinanInformasi('2')}
+//               >
+//                 <Text style={styles.checkboxText}>2. Kurir</Text>
+//                 {salinanInformasi2 ? (
+//                   <Text style={styles.checkboxIcon}>☑</Text>
+//                 ) : (
+//                   <Text style={styles.checkboxIcon}>☐</Text>
+//                 )}
+//               </TouchableOpacity>
+
+//           </View>
+//           <View style={styles.checkboxRow}>
+//           <TouchableOpacity
+//                   style={styles.checkbox}
+//                   onPress={() => handleSalinanInformasi('3')}
+//                 >
+//                   <Text style={styles.checkboxText}>3. Pos</Text>
+//                   {salinanInformasi3 ? (
+//                     <Text style={styles.checkboxIcon}>☑</Text>
+//                   ) : (
+//                     <Text style={styles.checkboxIcon}>☐</Text>
+//                   )}
+//                 </TouchableOpacity>
+
+//           </View>
+//           <View style={styles.checkboxRow}>
+//           <TouchableOpacity
+//                 style={styles.checkbox}
+//                 onPress={() => handleSalinanInformasi('4')}
+//               >
+//                 <Text style={styles.checkboxText}>4. Faksimili</Text>
+//                 {salinanInformasi4 ? (
+//                   <Text style={styles.checkboxIcon}>☑</Text>
+//                 ) : (
+//                   <Text style={styles.checkboxIcon}>☐</Text>
+//                 )}
+//               </TouchableOpacity>
+
+//           </View>
+//           <View style={styles.checkboxRow}>
+//           <TouchableOpacity
+//               style={styles.checkbox}
+//               onPress={() => handleSalinanInformasi('5')}
+//             >
+//               <Text style={styles.checkboxText}>5. E-Mail</Text>
+//               {salinanInformasi5 ? (
+//                 <Text style={styles.checkboxIcon}>☑</Text>
+//               ) : (
+//                 <Text style={styles.checkboxIcon}>☐</Text>
+//               )}
+//             </TouchableOpacity>
+
+//           </View>
+//         {/* </View> */}
+//           <View style={styles.button}>
+//             <Button title="SUBMIT FORM" onPress={handleSave} color={'#8D9BC1'}/>
+//           </View>
+//   </View>
+  
+//       </ScrollView>
+//       </BackgroundComponent>
+//     </KeyboardAvoidingView>
+//   );
+// };
+
+// export default PermohonanInfo;
+
+
+
+// import React, { useState, useEffect } from 'react';
+// import {
+//   View,
+//   Button,
+//   Text,
+//   TouchableOpacity,
+//   StyleSheet,
+//   TextInput,
+//   KeyboardAvoidingView,
+//   ScrollView,
+//   Alert,
+// } from 'react-native';
+// import { Picker } from '@react-native-picker/picker';
+// import * as DocumentPicker from 'expo-document-picker';
+// import axios from 'axios';
+// import { Platform } from 'react-native';
+// import { FIREBASE_AUTH } from '../../firebaseConfig';
+// import BackgroundComponent from '../../components/background';
+// import { router } from 'expo-router';
+// import styles from '../../assets/style/permohonanInfostyle';
+
+// interface PermohonanData {
+//   nama: string;
+//   pekerjaan: string;
+//   alamat: string;
+//   hp: string;
+//   email: string;
+//   rincian_permohonan: string;
+//   tujuan_permohonan: string;
+//   documentUrl: string;
+//   peroleh: string[];
+//   salinan: string[];
+//   nik: string;
+// }
+
+// const PermohonanInfo: React.FC = () => {
+//   const [formData, setFormData] = useState<PermohonanData>({
+//     nama: '',
+//     pekerjaan: '',
+//     alamat: '',
+//     hp: '',
+//     email: '',
+//     rincian_permohonan: '',
+//     tujuan_permohonan: '',
+//     documentUrl: '',
+//     peroleh: [],
+//     salinan: [],
+//     nik: '',
+//   });
+//   const [selectedDocument, setSelectedDocument] = useState<string | undefined>(undefined);
+//   const [submitting, setSubmitting] = useState<boolean>(false);
+//   // const [activities, setActivities] = useState<any[]>([]);
+
+//   const fetchActivities = async () => {
+//     // try {
+//     //   const response = await axios.get('https://linyjayainformatika.co.id/ppid-bkad/api/activities');
+//     //   console.log('Response Activities:', response.data);
+  
+//     //   // Misalkan response.data berisi array objek aktivitas, kemudian disimpan di state activities
+//     //   setActivities(response.data);
+//     // } catch (error) {
+//     //   console.error('Error fetching activities:', error);
+//     //   // Handle error fetching activities
+//     // }
+//   };
+  
+
+//   useEffect(() => {
+//     fetchActivities();
+//   }, []);
+
+//   const handleInputChange = (key: keyof PermohonanData, value: string | string[]) => {
+//     setFormData((prevState) => ({
+//       ...prevState,
+//       [key]: value,
+//     }));
+//   };
+
+//   const pickDocument = async () => {
+//     try {
+//       let result = await DocumentPicker.getDocumentAsync({
+//         type: 'image/*',
+//       });
+
+//       if (result.canceled) {
+//         console.log('Document picking was canceled.');
+//         return;
+//       }
+
+//       if (result.assets && result.assets.length > 0) {
+//         const file = result.assets[0];
+//         const fileType = file.uri.split('.').pop().toLowerCase();
+//         if (fileType === 'png' || fileType === 'jpg' || fileType === 'jpeg') {
+//           setSelectedDocument(file.uri);
+//           console.log('Document picked:', file);
+//         } else {
+//           Alert.alert('Error', 'Only PNG and JPG files are allowed.');
+//         }
+//       }
+//     } catch (error) {
+//       console.log('Error picking document:', error);
+//       Alert.alert('Error', 'Failed to pick a document.');
+//     }
+//   };
+
+//   const deleteDocument = () => {
+//     setSelectedDocument(undefined);
+//   };
+
+//   const handlePerolehToggle = (option: string) => {
+//     handleInputChange(
+//       'peroleh',
+//       formData.peroleh.includes(option)
+//         ? formData.peroleh.filter(item => item !== option)
+//         : [...formData.peroleh, option]
+//     );
+//   };
+
+//   const handleSalinanToggle = (option: string) => {
+//     handleInputChange(
+//       'salinan',
+//       formData.salinan.includes(option)
+//         ? formData.salinan.filter(item => item !== option)
+//         : [...formData.salinan, option]
+//     );
+//   };
+
+//   const handleSave = async () => {
+//     const { nama, pekerjaan, alamat, hp, rincian_permohonan, tujuan_permohonan, nik, peroleh, salinan } = formData;
+  
+//     if (!nama || !pekerjaan || !alamat || !hp || !rincian_permohonan || !tujuan_permohonan || !selectedDocument || !nik) {
+//       Alert.alert('Error', 'Please fill all the fields and select a document');
+//       return;
+//     }
+  
+//     if (peroleh.length === 0) {
+//       Alert.alert('Error', 'Please select at least one option for "Cara Memperoleh Informasi"');
+//       return;
+//     }
+  
+//     if (salinan.length === 0) {
+//       Alert.alert('Error', 'Please select at least one option for "Cara Mendapatkan Salinan Informasi"');
+//       return;
+//     }
+  
+//     setSubmitting(true);
+  
+//     try {
+//       const formData = new FormData();
+  
+//       const documentResponse = await fetch(selectedDocument);
+//       const documentBlob = await documentResponse.blob();
+//       const filenameWithExtension = selectedDocument.split('/').pop() || 'file';
+//       const fileExtension = filenameWithExtension.split('.').pop()?.toLowerCase();
+//       const newFilename = `${Date.now()}_${nama}.${fileExtension === 'jpeg' ? 'jpg' : fileExtension}`;
+//       const file = new File([documentBlob], newFilename, { type: documentBlob.type });
+  
+//       formData.append('nama', nama);
+//       formData.append('pekerjaan', pekerjaan === '' ? 'Pilih Pekerjaan' : pekerjaan);
+//       formData.append('alamat', alamat);
+//       formData.append('hp', hp);
+//       formData.append('email', FIREBASE_AUTH.currentUser?.email || '');
+//       formData.append('ktp', file);
+//       formData.append('rincian_permohonan', rincian_permohonan);
+//       formData.append('tujuan_permohonan', tujuan_permohonan);
+//       formData.append('peroleh', JSON.stringify(peroleh));
+//       formData.append('salinan', JSON.stringify(salinan));
+//       formData.append('nik', nik);
+  
+//       const response = await axios.post('https://linyjayainformatika.co.id/ppid-bkad/api/permohonan-informasi/store', formData, {
+//         headers: {
+//           'Content-Type': 'multipart/form-data',
+//         },
+//       });
+  
+//       console.log('Response Data:', response.data); // Menampilkan respons dari server
+//       console.log('Form Data Sent:', formData); // Menampilkan data yang dikirimkan
+  
+//       if (response.data.status === false) {
+//         throw new Error(response.data.message);
+//       }
+  
+//       Alert.alert('Success', 'Activity saved successfully');
+  
+//       // Clear form data
+//       setFormData({
+//         nama: '',
+//         pekerjaan: '',
+//         alamat: '',
+//         hp: '',
+//         email: '',
+//         rincian_permohonan: '',
+//         tujuan_permohonan: '',
+//         documentUrl: '',
+//         peroleh: [],
+//         salinan: [],
+//         nik: '',
+//       });
+//       setSelectedDocument(undefined);
+//       fetchActivities();
+//     } catch (error) {
+//       console.error('Error saving activity:', error);
+//       if (axios.isAxiosError(error)) {
+//         console.error('Axios error message:', error.message);
+//       }
+//       Alert.alert('Error', 'Failed to save activity');
+//     } finally {
+//       setSubmitting(false);
+//     }
+//   };
+  
+
+//   const perolehTextMap = {
+//     '1. Melihat/membaca/mendengarkan/mencatat': '1. Melihat/membaca/mendengarkan/mencatat',
+//     '2. Mendapatkan salinan informasi hardcopy/softcopy': '2. Mendapatkan salinan informasi hardcopy/softcopy',
+//   };
+
+//   const salinanTextMap = {
+//     '1. Mengambil Langsung': '1. Mengambil Langsung',
+//     '2. Kurir': '2. Kurir',
+//     '3. Pos': '3. Pos',
+//     '4. Faksimili': '4. Faksimili',
+//     '5. E-Mail': '5. E-Mail',
+//   };
+
+//   return (
+//     <KeyboardAvoidingView style={styles.container} behavior="padding" enabled>
+//       <BackgroundComponent>
+//         <ScrollView contentContainerStyle={styles.scrollContainer}>
+//           <Text style={styles.largeTitle}>Permohonan Informasi Publik</Text>
+//           <View>
+//             <View style={styles.button}>
+//               <Button
+//                 onPress={() => router.navigate('allFile/daftarPermohonan')}
+//                 title='LIHAT DAFTAR PERMOHONAN'
+//                 color={'#8D9BC1'}
+//               />
+//             </View>
+//             <View style={styles.separator}></View>
+//             <View style={styles.layout}>
+//               <TextInput
+//                 placeholder="Nama Lengkap"
+//                 value={formData.nama}
+//                 onChangeText={(value) => handleInputChange('nama', value)}
+//                 style={styles.input}
+//                 placeholderTextColor={"#ffffff"}
+//               />
+
+//               <View style={styles.pickerContainer}>
+//                 <Picker
+//                   selectedValue={formData.pekerjaan}
+//                   onValueChange={(value) => handleInputChange('pekerjaan', value)}
+//                   style={styles.picker}
+//                 >
+//                   <Picker.Item label="Pilih Pekerjaan" value="" />
+//                   <Picker.Item label="Pelajar/Mahasiswa" value="Pelajar/Mahasiswa" />
+//                   <Picker.Item label="PNS" value="PNS" />
+//                   <Picker.Item label="TNI/POLRI" value="TNI/POLRI" />
+//                   <Picker.Item label="Swasta" value="Swasta" />
+//                   <Picker.Item label="Wiraswasta" value="Wiraswasta" />
+//                   <Picker.Item label="Buruh" value="Buruh" />
+//                   <Picker.Item label="Lainnya" value="Lainnya" />
+//                 </Picker>
+//               </View>
+
+//               <TextInput
+//                 placeholder="Alamat"
+//                 value={formData.alamat}
+//                 onChangeText={(value) => handleInputChange('alamat', value)}
+//                 style={[styles.input, styles.largeInput]}
+//                 multiline
+//                 placeholderTextColor={"#ffffff"}
+//               />
+//               <TextInput
+//                 placeholder="Nomor HP"
+//                 value={formData.hp}
+//                 onChangeText={(value) => handleInputChange('hp', value)}
+//                 style={styles.input}
+//                 placeholderTextColor={"#ffffff"}
+//               />
+
+//               <TextInput
+//                 placeholder="NIK"
+//                 value={formData.nik}
+//                 onChangeText={(value) => handleInputChange('nik', value)}
+//                 style={styles.input}
+//                 placeholderTextColor={"#ffffff"}
+//               />
+
+//               <View style={styles.inputContainer}>
+//                 <Text style={styles.inputLabel}>Upload KTP</Text>
+//                 <View style={styles.documentSelection}>
+//                   {!selectedDocument ? (
+//                     <TouchableOpacity onPress={pickDocument} style={styles.browseButton}>
+//                       <Text style={styles.browseButtonText}>Choose File</Text>
+//                     </TouchableOpacity>
+//                   ) : (
+//                     <View style={styles.selectedDocument}>
+//                       <Text style={styles.selectedDocumentText}>File Selected: {selectedDocument.split('/').pop()}</Text>
+//                       <TouchableOpacity onPress={deleteDocument} style={styles.deleteButton}>
+//                         <Text style={styles.deleteButtonText}>Delete</Text>
+//                       </TouchableOpacity>
+//                     </View>
+//                   )}
+//                 </View>
+//               </View>
+
+//               <TextInput
+//                 placeholder={`${FIREBASE_AUTH.currentUser?.email || 'Your email'}`}
+//                 editable={false}
+//                 style={styles.input}
+//                 value={FIREBASE_AUTH.currentUser?.email || ''}
+//                 keyboardType="email-address"
+//                 placeholderTextColor={"#ffffff"}
+//               />
+//               <TextInput
+//                 placeholder="Rincian Permohonan"
+//                 value={formData.rincian_permohonan}
+//                 onChangeText={(value) => handleInputChange('rincian_permohonan', value)}
+//                 style={[styles.input, styles.largeInput]}
+//                 multiline
+//                 placeholderTextColor={"#ffffff"}
+//               />
+//               <TextInput
+//                 placeholder="Tujuan Permohonan"
+//                 value={formData.tujuan_permohonan}
+//                 onChangeText={(value) => handleInputChange('tujuan_permohonan', value)}
+//                 style={styles.input}
+//                 placeholderTextColor={"#ffffff"}
+//               />
+
+//               <View style={styles.separator}></View>
+//               <Text style={styles.sectionTitle}>Cara Memperoleh Informasi</Text>
+//               <View style={styles.checkboxContainer}>
+//                 {Object.entries(perolehTextMap).map(([key, value]) => (
+//                   <TouchableOpacity
+//                     key={key}
+//                     style={[styles.checkbox, formData.peroleh.includes(value) && styles.checkboxChecked]}
+//                     onPress={() => handlePerolehToggle(value)}
+//                   >
+//                     <View style={styles.checkboxInnerContainer}>
+//                       <Text style={styles.checkboxText}>{value}</Text>
+//                       <Text style={styles.checkboxIcon}>
+//                         {formData.peroleh.includes(value) ? '☑' : '☐'}
+//                       </Text>
+//                     </View>
+//                   </TouchableOpacity>
+//                 ))}
+//               </View>
+//               <View style={styles.separator}></View>
+//               <Text style={styles.sectionTitle}>Cara Mendapatkan Salinan Informasi</Text>
+//               <View style={styles.checkboxContainer}>
+//                 {Object.entries(salinanTextMap).map(([key, value]) => (
+//                   <TouchableOpacity
+//                     key={key}
+//                     style={[styles.checkbox, formData.salinan.includes(value) && styles.checkboxChecked]}
+//                     onPress={() => handleSalinanToggle(value)}
+//                   >
+//                     <View style={styles.checkboxInnerContainer}>
+//                       <Text style={styles.checkboxText}>{value}</Text>
+//                       <Text style={styles.checkboxIcon}>
+//                         {formData.salinan.includes(value) ? '☑' : '☐'}
+//                       </Text>
+//                     </View>
+//                   </TouchableOpacity>
+//                 ))}
+//               </View>
+
+//               <View style={styles.button}>
+//                 <Button
+//                   title={submitting ? 'Submitting...' : 'Save'}
+//                   onPress={handleSave}
+//                   disabled={submitting}
+//                   color={'#508BEF'}
+//                 />
+//               </View>
+//             </View>
+//           </View>
+//         </ScrollView>
+//       </BackgroundComponent>
+//     </KeyboardAvoidingView>
+//   );
+// };
+
+// export default PermohonanInfo;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PALLETE
+
+#084298
+#ffc107
+#3D3D3D
+#b8b8b8
+
+placeholder ; #2A2A2A49
+
+INPUT
+#FFC1076E
+
+
+
+
+
+
+
