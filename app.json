@@ -8,7 +8,7 @@
       "expo-router",
       "expo-document-picker"
     ],
-    "name": "PPID APP",
+    "name": "PPID BKAD SULSEL",
     "slug": "galactic-app",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -22,6 +22,7 @@
     },
     "android": {
       "package": "com.hyegod.app",
+      "versionCode": 2,
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",

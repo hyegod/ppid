@@ -28,7 +28,7 @@ export default () => {
         marginTop: 10,
         },
         tabBarActiveTintColor: '#084298',
-        tabBarInactiveTintColor: '#3D3D3D', 
+        tabBarInactiveTintColor: '#3D3D3D',
         tabBarIcon: ({ color, size }) => {
           let iconName;
 
